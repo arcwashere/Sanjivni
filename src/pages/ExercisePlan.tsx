@@ -1,7 +1,9 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Camera, CameraOff, Hand, StretchHorizontal, Armchair, Play, Square, RotateCcw, Loader2 } from "lucide-react";
+import { ArrowLeft, Camera, CameraOff, Hand, StretchHorizontal, Armchair, Play, Square, RotateCcw, Loader2, Save } from "lucide-react";
 import { usePoseDetection } from "@/hooks/usePoseDetection";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import type { PoseLandmarkerResult } from "@mediapipe/tasks-vision";
 
 type ExerciseId = "hands-up" | "flyaways" | "sit-reach";
@@ -43,9 +45,15 @@ const ExercisePlan = () => {
     if (!result.landmarks || result.landmarks.length === 0) return;
     const lm = result.landmarks[0];
 
+    // Mirror horizontally to match front-facing camera
+    ctx.save();
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+
     // Draw connections
-    ctx.strokeStyle = "hsl(152, 45%, 42%)";
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#22c55e";
+    ctx.lineWidth = 4;
+    ctx.lineCap = "round";
     POSE_CONNECTIONS.forEach(([a, b]) => {
       if (lm[a] && lm[b]) {
         ctx.beginPath();
@@ -58,13 +66,15 @@ const ExercisePlan = () => {
     // Draw points
     lm.forEach((point) => {
       ctx.beginPath();
-      ctx.arc(point.x * canvas.width, point.y * canvas.height, 5, 0, 2 * Math.PI);
-      ctx.fillStyle = "hsl(152, 45%, 55%)";
+      ctx.arc(point.x * canvas.width, point.y * canvas.height, 7, 0, 2 * Math.PI);
+      ctx.fillStyle = "#4ade80";
       ctx.fill();
-      ctx.strokeStyle = "hsl(0, 0%, 100%)";
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 2;
       ctx.stroke();
     });
+
+    ctx.restore();
   }, []);
 
   const startCamera = useCallback(async () => {
@@ -78,10 +88,13 @@ const ExercisePlan = () => {
     }
   }, [initialize]);
 
-  // Attach stream to video element once it's rendered
+  // Attach stream to video element once it's rendered and wait for it to be ready
   useEffect(() => {
-    if (cameraOn && videoRef.current && streamRef.current) {
-      videoRef.current.srcObject = streamRef.current;
+    const video = videoRef.current;
+    if (cameraOn && video && streamRef.current) {
+      video.srcObject = streamRef.current;
+      // Ensure video plays and is ready
+      video.play().catch(console.error);
     }
   }, [cameraOn]);
 
@@ -94,21 +107,53 @@ const ExercisePlan = () => {
     setIsTracking(false);
   }, [stopDetection]);
 
-  const startTracking = () => {
-    if (!selectedExercise || !cameraOn || !ready || !videoRef.current) return;
-    setIsTracking(true);
-    startDetection(
-      videoRef.current,
-      selectedExercise,
-      () => setRepCounts((prev) => ({ ...prev, [selectedExercise]: prev[selectedExercise] + 1 })),
-      drawLandmarks
-    );
-  };
+  const startTracking = useCallback(() => {
+    const video = videoRef.current;
+    if (!selectedExercise || !cameraOn || !ready || !video) return;
 
-  const stopTracking = () => {
+    const beginDetection = () => {
+      setIsTracking(true);
+      startDetection(
+        video,
+        selectedExercise,
+        () => setRepCounts((prev) => ({ ...prev, [selectedExercise]: prev[selectedExercise] + 1 })),
+        drawLandmarks
+      );
+    };
+
+    // Wait for video to be truly playing with valid dimensions
+    if (video.readyState >= 2 && video.videoWidth > 0) {
+      beginDetection();
+    } else {
+      const onReady = () => {
+        video.removeEventListener("loadeddata", onReady);
+        beginDetection();
+      };
+      video.addEventListener("loadeddata", onReady);
+    }
+  }, [selectedExercise, cameraOn, ready, startDetection, drawLandmarks]);
+
+  const stopTracking = useCallback(async () => {
     setIsTracking(false);
     stopDetection();
-  };
+
+    // Save reps to database when stopping
+    if (selectedExercise && repCounts[selectedExercise] > 0) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { error } = await supabase.from("exercise_reps").insert({
+          user_id: user.id,
+          exercise_type: selectedExercise,
+          rep_count: repCounts[selectedExercise],
+        });
+        if (error) {
+          toast.error("Failed to save reps");
+        } else {
+          toast.success(`${repCounts[selectedExercise]} reps saved!`);
+        }
+      }
+    }
+  }, [stopDetection, selectedExercise, repCounts]);
 
   const resetReps = () => {
     if (selectedExercise) {
@@ -140,8 +185,8 @@ const ExercisePlan = () => {
         <div className="relative w-full aspect-[4/3] bg-foreground/5 rounded-2xl overflow-hidden border border-border">
           {cameraOn ? (
             <>
-              <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-              <canvas ref={canvasRef} className="absolute inset-0 w-full h-full object-cover pointer-events-none" />
+              <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" style={{ transform: "scaleX(-1)" }} />
+              <canvas ref={canvasRef} className="absolute inset-0 w-full h-full object-cover pointer-events-none" style={{ transform: "scaleX(-1)" }} />
             </>
           ) : (
             <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground">

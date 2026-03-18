@@ -89,6 +89,33 @@ export type Database = {
         }
         Relationships: []
       }
+      exercise_reps: {
+        Row: {
+          completed_at: string
+          created_at: string
+          exercise_type: string
+          id: string
+          rep_count: number
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          exercise_type: string
+          id?: string
+          rep_count?: number
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          exercise_type?: string
+          id?: string
+          rep_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string

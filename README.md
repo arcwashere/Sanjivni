@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-# Sanjivni
-Sanjivni is a consent-based platform that helps elderly people live independently while caregivers verify daily activities. Parents log tasks and exercises, and caregivers confirm them through a secure dashboard.
-Core Features:
-  - 24-hour caregiver connection code
-  - Parent activity logging
-  - AI rep counter
-  - Activity logs leaderboard
-=======
 # Welcome to your Lovable project
 
 ## Project info
@@ -80,4 +71,3 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
->>>>>>> 705b0e7 (Initial commit)
