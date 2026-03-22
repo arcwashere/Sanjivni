@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { LogOut, Users, Link2, UserPlus, User, Dumbbell, ChevronRight, ClipboardList } from "lucide-react";
+import { LogOut, Users, Link2, UserPlus, User, Dumbbell, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import VitalSigns from "@/components/VitalSigns";
 import NotificationBell from "@/components/NotificationBell";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ParentActivityView from "@/components/ParentActivityView";
+import CaregiverReminders from "@/components/CaregiverReminders";
 
 interface ConnectedParent {
   parent_id: string;
@@ -294,6 +295,8 @@ const CaregiverDashboard = () => {
                   <VitalSigns userId={selectedParent.parent_id} userName={selectedParent.full_name} />
 
                   <ParentActivityView parentId={selectedParent.parent_id} parentName={selectedParent.full_name} />
+
+                  <CaregiverReminders parentId={selectedParent.parent_id} parentName={selectedParent.full_name} />
 
                   <section className="space-y-3">
                     <h2 className="section-title flex items-center gap-2">

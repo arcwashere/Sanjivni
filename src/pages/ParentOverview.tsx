@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Home, TrendingUp, Calendar, LogOut } from "lucide-react";
+import { Home, TrendingUp, Bell, LogOut } from "lucide-react";
 import NotificationBell from "@/components/NotificationBell";
 import { supabase } from "@/integrations/supabase/client";
 import VitalSigns from "@/components/VitalSigns";
@@ -8,7 +8,7 @@ import UpcomingAppointments from "@/components/UpcomingAppointments";
 import PhysioProgress from "@/components/PhysioProgress";
 import RecentActivity from "@/components/RecentActivity";
 import ProgressLeaderboard from "@/components/ProgressLeaderboard";
-import AppointmentsList from "@/components/AppointmentsList";
+import ParentReminders from "@/components/ParentReminders";
 import ConnectionCode from "@/components/ConnectionCode";
 import UpdateVitals from "@/components/UpdateVitals";
 import DailyActivityLog from "@/components/DailyActivityLog";
@@ -16,7 +16,7 @@ import DailyActivityLog from "@/components/DailyActivityLog";
 const tabs = [
   { id: "overview", label: "Overview", icon: Home },
   { id: "progress", label: "Progress", icon: TrendingUp },
-  { id: "appointments", label: "Appointments", icon: Calendar },
+  { id: "reminders", label: "Reminders", icon: Bell },
 ] as const;
 
 type TabId = typeof tabs[number]["id"];
@@ -80,13 +80,12 @@ const ParentOverview = () => {
             <DailyActivityLog />
             <UpdateVitals />
             <ConnectionCode />
-            <UpcomingAppointments />
             <PhysioProgress />
             <RecentActivity />
           </>
         )}
         {activeTab === "progress" && <ProgressLeaderboard />}
-        {activeTab === "appointments" && <AppointmentsList />}
+        {activeTab === "reminders" && <ParentReminders />}
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-4 py-2 flex justify-around items-center max-w-lg mx-auto">

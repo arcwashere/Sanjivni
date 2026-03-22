@@ -176,6 +176,42 @@ export type Database = {
         }
         Relationships: []
       }
+      reminders: {
+        Row: {
+          caregiver_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_completed: boolean
+          parent_id: string
+          reminder_time: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          caregiver_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_completed?: boolean
+          parent_id: string
+          reminder_time?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          caregiver_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_completed?: boolean
+          parent_id?: string
+          reminder_time?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       vital_signs: {
         Row: {
           blood_pressure_diastolic: number | null
